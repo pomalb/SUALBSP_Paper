@@ -1,0 +1,133 @@
+<number of tasks>
+15
+
+<cycle time>
+25
+
+
+##################################################
+# TASK TIMES
+##################################################
+
+<task times>
+
+# --- production tasks ---
+1 3
+2 5
+3 4
+4 6
+5 2
+6 7
+7 4
+8 5
+9 3
+10 6
+11 2
+12 4
+13 7
+14 5
+15 3
+
+##################################################
+# PRECEDENCE RELATIONS
+##################################################
+
+<precedence relations>
+
+# production chain
+1,3
+1,4
+2,4
+2,5
+3,6
+4,6
+4,7
+5,7
+6,8
+6,9
+7,9
+8,10
+9,10
+9,11
+10,12
+11,12
+11,13
+12,14
+13,14
+14,15
+
+##################################################
+# STATES
+##################################################
+
+<state variables>
+D_temp  : {0,1,2,3,4}
+D_clean : {True,False}
+
+# ST[t] ∈ D_temp × D_clean
+
+<initial state>
+D_temp  = 0
+D_clean = True
+
+<state change costs>
+D_temp  : linear 2
+D_clean : toggle 5
+
+
+##################################################
+# TASK PRECONDITIONS
+##################################################
+
+<task preconditions>
+
+# --- production tasks ---
+1  : D_temp in {0}   ; D_clean in {True,False}
+2  : D_temp in {1}   ; D_clean in {True}
+3  : D_temp in {2}   ; D_clean in {True,False}
+4  : D_temp in {3}   ; D_clean in {True}
+5  : D_temp in {4}   ; D_clean in {True,False}
+6  : D_temp in {0}   ; D_clean in {True}
+7  : D_temp in {1}   ; D_clean in {True,False}
+8  : D_temp in {2}   ; D_clean in {True}
+9  : D_temp in {3}   ; D_clean in {True,False}
+10 : D_temp in {4}   ; D_clean in {True}
+11 : D_temp in {0}   ; D_clean in {True,False}
+12 : D_temp in {1}   ; D_clean in {True}
+13 : D_temp in {2}   ; D_clean in {True,False}
+14 : D_temp in {3}   ; D_clean in {True}
+15 : D_temp in {4}   ; D_clean in {True,False}
+
+##################################################
+# TASK STATE CHANGES
+##################################################
+# After execution on station t:
+#   ST[t] := new state
+
+<task changes>
+
+# --- production tasks ---
+1  : D_temp = 0 ; D_clean = False
+2  : D_temp = 1 ; D_clean = False
+3  : D_temp = 2 ; D_clean = False
+4  : D_temp = 3 ; D_clean = False
+5  : D_temp = 4 ; D_clean = False
+6  : D_temp = 0 ; D_clean = False
+7  : D_temp = 1 ; D_clean = False
+8  : D_temp = 2 ; D_clean = False
+9  : D_temp = 3 ; D_clean = False
+10 : D_temp = 4 ; D_clean = False
+11 : D_temp = 0 ; D_clean = False
+12 : D_temp = 1 ; D_clean = False
+13 : D_temp = 2 ; D_clean = False
+14 : D_temp = 3 ; D_clean = False
+15 : D_temp = 4 ; D_clean = False
+
+##################################################
+# META
+##################################################
+
+<rand seed>
+467321153
+
+<end>
