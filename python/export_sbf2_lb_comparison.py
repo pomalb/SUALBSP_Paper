@@ -17,7 +17,6 @@ computes per-instance percentage gaps to known optima, and exports:
 
 import argparse
 import csv
-import inspect
 import re
 from collections import defaultdict
 from pathlib import Path
@@ -42,6 +41,7 @@ DEFAULT_OUTPUT_DIR = REPO_ROOT / "results"
 
 ALPHA_ORDER = (0.25, 0.50, 0.75, 1.00)
 ALPHA_PATTERN = re.compile(r"(?:alpha|a)[_\- ]*(0?\.\d+|\d+(?:\.\d+)?)", re.IGNORECASE)
+GENERIC_ALPHA_VALUE_PATTERN = re.compile(r"(?<!\d)(0?\.\d+|1(?:\.0+)?)")
 
 
 def parse_args() -> argparse.Namespace:
@@ -65,6 +65,12 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=DEFAULT_OUTPUT_DIR / "sbf2_lb_summary_by_alpha.csv",
         help="Output CSV path for alpha-group summary rows.",
+    )
+    parser.add_argument(
+        "--parse-errors-csv",
+        type=Path,
+        default=DEFAULT_OUTPUT_DIR / "sbf2_lb_parse_errors.csv",
+        help="Output CSV path for files that the current parser cannot read.",
     )
     return parser.parse_args()
 
@@ -97,6 +103,15 @@ def detect_alpha(path: Path) -> float | None:
     # Fallback for plain folder/file tokens containing 25/50/75/100 with alpha hints.
     lowered_parts = [p.lower() for p in path.parts]
     for part in lowered_parts:
+        generic_match = GENERIC_ALPHA_VALUE_PATTERN.search(part)
+        if generic_match:
+            try:
+                normalized = normalize_alpha(float(generic_match.group(1)))
+            except ValueError:
+                normalized = None
+            if normalized is not None:
+                return normalized
+
         if "alpha" in part:
             if "25" in part:
                 return 0.25
@@ -110,16 +125,20 @@ def detect_alpha(path: Path) -> float | None:
     return None
 
 
-def compute_bounds(instance: Instance) -> dict[str, int | None]:
-    """
-    Call compute_lower_bounds while remaining compatible with signatures
-    with/without a use_lm4 argument.
-    """
-    signature = inspect.signature(compute_lower_bounds)
-    if "use_lm4" in signature.parameters:
-        bounds_obj = compute_lower_bounds(instance, use_lm4=True)
-    else:
-        bounds_obj = compute_lower_bounds(instance)
+def prompt_use_lm4() -> bool:
+    """Ask whether LM4 should be included in the benchmark run."""
+    while True:
+        answer = input("Include LM4 in the benchmark? [y/n]: ").strip().lower()
+        if answer in {"y", "yes"}:
+            return True
+        if answer in {"n", "no"}:
+            return False
+        print("Please answer with 'y' or 'n'.")
+
+
+def compute_bounds(instance: Instance, use_lm4: bool) -> dict[str, int | None]:
+    """Compute the lower bounds provided by the current Python implementation."""
+    bounds_obj = compute_lower_bounds(instance, use_lm4=use_lm4)
 
     values = {
         "lm1": getattr(bounds_obj, "lm1", None),
@@ -128,18 +147,6 @@ def compute_bounds(instance: Instance) -> dict[str, int | None]:
         "lm3": getattr(bounds_obj, "lm3", None),
         "lm4": getattr(bounds_obj, "lm4", None),
     }
-
-    # Optional fallback: some versions expose lm4 as a module-level function.
-    if values["lm4"] is None:
-        try:
-            from python import lowerbounds as lb_module
-
-            lm4_func = getattr(lb_module, "lm4", None)
-            if callable(lm4_func):
-                values["lm4"] = int(lm4_func(instance))
-        except Exception:
-            # Keep evaluation-only script robust; missing LM4 is allowed.
-            pass
 
     return values
 
@@ -167,6 +174,7 @@ def mean(values: list[float]) -> float | None:
 def main() -> None:
     args = parse_args()
     sbf2_dir: Path = args.sbf2_dir
+    use_lm4 = prompt_use_lm4()
 
     if not sbf2_dir.exists():
         raise FileNotFoundError(f"SBF2 directory not found: {sbf2_dir}")
@@ -176,20 +184,38 @@ def main() -> None:
         raise FileNotFoundError(f"No .alb files found in: {sbf2_dir}")
 
     per_instance_rows: list[dict[str, Any]] = []
+    parse_error_rows: list[dict[str, str]] = []
+    skipped_missing_alpha = 0
+    skipped_missing_opt = 0
 
     for alb_path in alb_files:
         alpha = detect_alpha(alb_path)
         if alpha is None:
+            skipped_missing_alpha += 1
             continue
 
-        instance = Instance.read_sbf(alb_path)
+        try:
+            instance = Instance.read_sbf(alb_path)
+        except Exception as exc:
+            parse_error_rows.append(
+                {
+                    "alpha": f"{alpha:.2f}",
+                    "instance": alb_path.name,
+                    "path": str(alb_path),
+                    "error_type": type(exc).__name__,
+                    "error_message": str(exc),
+                }
+            )
+            continue
+
         opt = instance.optm
         if opt is None:
             # Required by task: skip instances without known optimum.
+            skipped_missing_opt += 1
             continue
 
         preprocess(instance)
-        lbs = compute_bounds(instance)
+        lbs = compute_bounds(instance, use_lm4=use_lm4)
 
         row = {
             "alpha": f"{alpha:.2f}",
@@ -229,8 +255,21 @@ def main() -> None:
             }
         )
 
+    summary_rows.append(
+        {
+            "alpha": "avg",
+            "N": len(ALPHA_ORDER),
+            "avg_gap_lm1_pct": mean([row["avg_gap_lm1_pct"] for row in summary_rows if row["avg_gap_lm1_pct"] is not None]),
+            "avg_gap_lms1_pct": mean([row["avg_gap_lms1_pct"] for row in summary_rows if row["avg_gap_lms1_pct"] is not None]),
+            "avg_gap_lm2_pct": mean([row["avg_gap_lm2_pct"] for row in summary_rows if row["avg_gap_lm2_pct"] is not None]),
+            "avg_gap_lm3_pct": mean([row["avg_gap_lm3_pct"] for row in summary_rows if row["avg_gap_lm3_pct"] is not None]),
+            "avg_gap_lm4_pct": mean([row["avg_gap_lm4_pct"] for row in summary_rows if row["avg_gap_lm4_pct"] is not None]),
+        }
+    )
+
     args.per_instance_csv.parent.mkdir(parents=True, exist_ok=True)
     args.summary_csv.parent.mkdir(parents=True, exist_ok=True)
+    args.parse_errors_csv.parent.mkdir(parents=True, exist_ok=True)
 
     per_instance_fields = [
         "alpha",
@@ -267,6 +306,12 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(summary_rows)
 
+    parse_error_fields = ["alpha", "instance", "path", "error_type", "error_message"]
+    with args.parse_errors_csv.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=parse_error_fields)
+        writer.writeheader()
+        writer.writerows(parse_error_rows)
+
     # Console summary table.
     print("SBF2 Lower-Bound Gap Summary by alpha")
     print("(gap = (opt - lb) / opt * 100)")
@@ -277,7 +322,7 @@ def main() -> None:
     for row in summary_rows:
         print(
             f"{row['alpha']:>7} "
-            f"{row['N']:>6d} "
+            f"{str(row['N']):>6} "
             f"{fmt_num(row['avg_gap_lm1_pct']):>10} "
             f"{fmt_num(row['avg_gap_lms1_pct']):>10} "
             f"{fmt_num(row['avg_gap_lm2_pct']):>10} "
@@ -288,7 +333,16 @@ def main() -> None:
     print("-" * 90)
     print(f"Per-instance CSV: {args.per_instance_csv}")
     print(f"Summary CSV:      {args.summary_csv}")
+    print(f"Parse errors CSV: {args.parse_errors_csv}")
+    print(f"Found .alb files: {len(alb_files)}")
+    print(f"Skipped (alpha not detected): {skipped_missing_alpha}")
+    print(f"Skipped (missing opt):        {skipped_missing_opt}")
+    print(f"Skipped (parser errors):      {len(parse_error_rows)}")
     print(f"Processed instances with known opt: {len(per_instance_rows)}")
+    if parse_error_rows:
+        print("First parser-error files:")
+        for row in parse_error_rows[:5]:
+            print(f"  - {row['path']} [{row['error_type']}: {row['error_message']}]")
 
 
 if __name__ == "__main__":
