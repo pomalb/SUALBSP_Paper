@@ -1,20 +1,5 @@
 from __future__ import annotations
 
-"""
-Evaluate SBF2 lower-bound quality against known optimal station counts.
-
-This script reuses the repository's existing Python implementation:
-- Instance.read_sbf(...)
-- preprocess(instance)
-- compute_lower_bounds(...)
-
-It scans SBF2 .alb files, computes LM1/LMS1/LM2/LM3/(LM4 if available),
-computes per-instance percentage gaps to known optima, and exports:
-1) a per-instance CSV
-2) a summary CSV grouped by alpha in {0.25, 0.50, 0.75, 1.00}
-3) a compact console table
-"""
-
 import argparse
 import csv
 import re
@@ -33,9 +18,9 @@ from python.lowerbounds import compute_lower_bounds
 from python.preprocessing import preprocess
 
 # ---------------------------
-# Configurable default paths
+# Default paths
 # ---------------------------
-# Paths inferred from the repository tree shown by the user.
+# Paths inferred from the repository tree
 DEFAULT_SBF2_DIR = REPO_ROOT / "python" / "DataSets" / "DataSet SBF2"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "results"
 
@@ -84,8 +69,8 @@ def normalize_alpha(value: float) -> float | None:
 
 def detect_alpha(path: Path) -> float | None:
     """
-    Detect alpha from file name and/or parent directory names.
-    Accepts patterns like alpha0.25, alpha_0.5, a0.75, etc.
+    Detect alpha from file and parent directory names
+    Accepts patterns like alpha0.25, alpha_0.5, and a0.75
     """
     search_space = [path.name] + [part for part in path.parts]
     for token in search_space:
@@ -100,7 +85,7 @@ def detect_alpha(path: Path) -> float | None:
         if normalized is not None:
             return normalized
 
-    # Fallback for plain folder/file tokens containing 25/50/75/100 with alpha hints.
+    # Fallback for tokens containing 25, 50, 75, or 100 with alpha hints
     lowered_parts = [p.lower() for p in path.parts]
     for part in lowered_parts:
         generic_match = GENERIC_ALPHA_VALUE_PATTERN.search(part)
@@ -126,7 +111,7 @@ def detect_alpha(path: Path) -> float | None:
 
 
 def prompt_use_lm4() -> bool:
-    """Ask whether LM4 should be included in the benchmark run."""
+    """Ask whether LM4 should be included in the benchmark run"""
     while True:
         answer = input("Include LM4 in the benchmark? [y/n]: ").strip().lower()
         if answer in {"y", "yes"}:
@@ -137,7 +122,7 @@ def prompt_use_lm4() -> bool:
 
 
 def compute_bounds(instance: Instance, use_lm4: bool) -> dict[str, int | None]:
-    """Compute the lower bounds provided by the current Python implementation."""
+    """Compute lower bounds from the current Python implementation"""
     bounds_obj = compute_lower_bounds(instance, use_lm4=use_lm4)
 
     values = {
@@ -210,7 +195,7 @@ def main() -> None:
 
         opt = instance.optm
         if opt is None:
-            # Required by task: skip instances without known optimum.
+            # Skip instances without known optimum
             skipped_missing_opt += 1
             continue
 
@@ -235,7 +220,7 @@ def main() -> None:
         }
         per_instance_rows.append(row)
 
-    # Group summary by alpha.
+    # Group summary by alpha
     grouped: dict[float, list[dict[str, Any]]] = defaultdict(list)
     for row in per_instance_rows:
         grouped[float(row["alpha"])].append(row)
@@ -312,7 +297,7 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(parse_error_rows)
 
-    # Console summary table.
+    # Console summary table
     print("SBF2 Lower-Bound Gap Summary by alpha")
     print("(gap = (opt - lb) / opt * 100)")
     print("-" * 90)

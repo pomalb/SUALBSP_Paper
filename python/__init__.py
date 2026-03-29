@@ -1,1 +1,1 @@
-"""Python implementation of SUALBSP components."""
+"""Python implementation of SUALBSP components"""

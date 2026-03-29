@@ -1,0 +1,21 @@
+dataset,task_count,runtime_sec,status
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc111_c=10027.alb,111,0.000676124996971339,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc111_c=10743.alb,111,0.00072900002123788,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc111_c=11570.alb,111,0.0006383750005625188,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc111_c=17067.alb,111,0.00048220803728327155,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc111_c=5785.alb,111,0.0009986659861169755,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc111_c=6016.alb,111,0.001129375013988465,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc111_c=6267.alb,111,0.0011332909925840795,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc111_c=6540.alb,111,0.0010341249871999025,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc111_c=6837.alb,111,0.001013832981698215,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc111_c=7162.alb,111,0.0009582500206306577,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc111_c=7520.alb,111,0.0009340830147266388,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc111_c=7916.alb,111,0.0008783340454101562,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc111_c=8356.alb,111,0.0008490420295856893,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc111_c=9400.alb,111,0.0007617919472977519,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc83_c=3786.alb,83,0.000613124982919544,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc83_c=3985.alb,83,0.0006615000311285257,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc83_c=4206.alb,83,0.0006254579639062285,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc83_c=4454.alb,83,0.0006005420000292361,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc83_c=4732.alb,83,0.0005779580096714199,ok
+/Users/lennarternst/Documents/TU-Berlin/ALB Seminar/VS_Code/SUALBSP_Paper/python/DataSets/DataSet_SBF1/SBF1-0.25/Arc83_c=5048.alb,83,0.0006187920225784183,ok
